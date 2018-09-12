@@ -17,6 +17,7 @@ type
   procedure DropQuery;
   function pm_GetQueryCount: Integer;
   function pm_GetQueryData(Index: Integer): TTempRec;
+  procedure DeleteInvalid;
  public
   constructor Create;
   destructor  Destroy; override;
@@ -57,7 +58,14 @@ begin
  begin
   f_DB.ExecSQL(c_SQL_CreateTable);
   f_DB.ExecSQL(c_SQL_CreateIndex);
- end;
+ end
+ else
+  DeleteInvalid;
+end;
+
+procedure TTempDataSource.DeleteInvalid;
+begin
+ f_DB.ExecSQL('DELETE FROM '+ c_TableName+ ' WHERE temperature > 120');
 end;
 
 destructor TTempDataSource.Destroy;
@@ -97,7 +105,7 @@ begin
  l_FS:= TFormatSettings.Create;
  l_Sep := l_FS.DecimalSeparator;
  l_FS.DecimalSeparator := '.';
- f_DB.ExecSQL(Format('INSERT INTO '+c_TableName+' (moment, temperature) VALUES (%d, %.6f);', [DateTimeToUnix(aDT), aTemp]));
+ f_DB.ExecSQL(Format('INSERT INTO '+c_TableName+' (moment, temperature) VALUES (%d, %.6f);', [DateTimeToUnix(aDT), aTemp], l_FS));
  l_FS.DecimalSeparator := l_Sep;
 end;
 

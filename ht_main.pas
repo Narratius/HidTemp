@@ -4,57 +4,91 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls;
+  Dialogs, StdCtrls, ExtCtrls, VclTee.TeeGDIPlus, VCLTee.TeEngine,
+  VCLTee.TeeProcs, VCLTee.Chart, VCLTee.Series, System.Actions, Vcl.ActnList,
+  Vcl.Menus, TempDS;
 
 type
-  TForm1 = class(TForm)
-    ListBox1: TListBox;
+  TMainForm = class(TForm)
     Timer1: TTimer;
+    ChartTemp: TChart;
+    Series1: TLineSeries;
+    MainMenu1: TMainMenu;
+    Panel1: TPanel;
+    N1: TMenuItem;
+    N2: TMenuItem;
+    ActionList1: TActionList;
+    actExit: TAction;
+    actConfig: TAction;
+    N3: TMenuItem;
+    ComboInterval: TComboBox;
     procedure FormCreate(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
+    procedure N2Click(Sender: TObject);
+    procedure actExitExecute(Sender: TObject);
+    procedure ComboIntervalChange(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
+    f_DS : TTempDataSource;
+
+    procedure AddTemperature;
+    procedure RedrawChart;
+    function GetTemperature: Double;
   public
     { Public declarations }
   end;
 
 var
-  Form1: TForm1;
+  MainForm: TMainForm;
 
 implementation
 uses
- HIDFTDLL,
- TempDS{,
- GartimeDS};
+ DateUtils,
+ HIDFTDLL;
 
 {$R *.dfm}
 
-procedure TForm1.FormCreate(Sender: TObject);
-var
- l_DS : TTempDataSource;
- l_Cnt: Integer;
- l_Data : TTempRec;
- l_X: Double;
+procedure TMainForm.actExitExecute(Sender: TObject);
 begin
- l_DS := TTempDataSource.Create;
- //l_DS.Put(Now, 25.1652);
- l_DS.QueryAll;
- l_Cnt := l_DS.QueryCount;
- l_Data := l_DS.QueryData[1];
- l_DS.Query(0, Now);
- l_Cnt := l_DS.QueryCount;
- l_Data := l_DS.QueryData[0];
- l_Data := l_DS.MaxTemp(0, Now);
- l_Data := l_DS.MinTemp(0, Now);
- l_DS.Free;
+  Close;
 end;
 
-procedure TForm1.Timer1Timer(Sender: TObject);
+procedure TMainForm.AddTemperature;
+var
+ l_Date: TDateTime;
+ l_Temp: Double;
+ l_Color: TColor;
+begin
+ l_Date:= Now;
+ l_Temp:= GetTemperature;
+ f_DS.Put(l_Date, l_Temp);
+
+ RedrawChart;
+end;
+
+procedure TMainForm.ComboIntervalChange(Sender: TObject);
+begin
+ RedrawChart;
+end;
+
+procedure TMainForm.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  f_DS.Free;
+end;
+
+procedure TMainForm.FormCreate(Sender: TObject);
+begin
+ ComboInterval.ItemIndex:= 1;
+ f_DS := TTempDataSource.Create;
+ Timer1.Interval:= 1000*3*60;
+ AddTemperature;
+end;
+
+function TMainForm.GetTemperature: Double;
 var
  I, l_Count: Integer;
- l_Temp: Double;
 begin
- //ListBox1.Clear;
  l_Count := EMyDetectDevice(0);
  for I := 0 to l_Count-1 do
  begin
@@ -62,11 +96,56 @@ begin
   Sleep(100);
   EMyInitConfig(True);
   Sleep(100);
-  l_Temp := EMyReadTemp(True);
-  ListBox1.Items.Add(Format('Device %d: Temp = %f', [I, l_Temp]));
-  Application.ProcessMessages;
+  Result := EMyReadTemp(True);
   EMyCloseDevice;
  end;
+end;
+
+procedure TMainForm.N2Click(Sender: TObject);
+begin
+  Close
+end;
+
+procedure TMainForm.RedrawChart;
+var
+ l_From, l_To: TDateTime;
+ i: Integer;
+ l_rec: TTempRec;
+ l_Color: TColor;
+ l_FS: TFormatSettings;
+begin
+ Series1.Clear;
+ //series1.Smoothed:= True;
+ l_To:= Now;
+  case ComboInterval.ItemIndex of
+    0: l_From:= IncHour(l_To, -1); // 1
+    1: l_From:= IncHour(l_To, -2); // 2
+    2: l_From:= IncHour(l_To, -8); // 8
+    3: l_From:= IncHour(l_To, -24); // day
+    4: l_From:= 0; // all
+  end;
+ f_DS.Query(l_From, l_To);
+ l_FS:= TFormatSettings.Create;
+ l_FS.LongTimeFormat:= 'HH:mm';
+ for I := 0 to f_DS.QueryCount-1 do
+ begin
+  l_Rec:= f_DS.QueryData[i];
+  if l_Rec.rTemp < 22 then
+   l_Color:= clBlue
+  else
+  if l_Rec.rTemp > 24 then
+   l_Color:= clRed
+  else
+   l_Color:= clGreen;
+  Series1.Add(l_Rec.rTemp, TimeToStr(l_Rec.rDateTime, l_FS), l_Color);
+ end;
+ ChartTemp.LeftAxis.Maximum:= f_DS.MaxTemp(l_From, l_To).rTemp+1;
+ ChartTemp.LeftAxis.Minimum:= f_DS.MinTemp(l_From, l_To).rTemp-1;
+end;
+
+procedure TMainForm.Timer1Timer(Sender: TObject);
+begin
+ AddTemperature;
 end;
 
 end.

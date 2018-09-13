@@ -65,7 +65,8 @@ end;
 
 procedure TTempDataSource.DeleteInvalid;
 begin
- f_DB.ExecSQL('DELETE FROM '+ c_TableName+ ' WHERE temperature > 120');
+ f_DB.ExecSQL('DELETE FROM '+ c_TableName+ ' WHERE (temperature < -40) and (temperature > 120)');
+
 end;
 
 destructor TTempDataSource.Destroy;

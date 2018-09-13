@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ExtCtrls, VclTee.TeeGDIPlus, VCLTee.TeEngine,
   VCLTee.TeeProcs, VCLTee.Chart, VCLTee.Series, System.Actions, Vcl.ActnList,
-  Vcl.Menus, TempDS;
+  Vcl.Menus, TempDS, VCLTee.TeeSpline, Vcl.XPMan, autorunner;
 
 type
   TMainForm = class(TForm)
@@ -22,6 +22,9 @@ type
     actConfig: TAction;
     N3: TMenuItem;
     ComboInterval: TComboBox;
+    Label1: TLabel;
+    Label2: TLabel;
+    XPManifest1: TXPManifest;
     procedure FormCreate(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
     procedure N2Click(Sender: TObject);
@@ -33,6 +36,7 @@ type
     f_DS : TTempDataSource;
 
     procedure AddTemperature;
+    procedure AddToAutoRun;
     procedure RedrawChart;
     function GetTemperature: Double;
   public
@@ -63,8 +67,19 @@ begin
  l_Date:= Now;
  l_Temp:= GetTemperature;
  f_DS.Put(l_Date, l_Temp);
-
+ Panel1.Caption:= Format('%f C', [l_Temp]);
  RedrawChart;
+end;
+
+procedure TMainForm.AddToAutoRun;
+begin
+ with TAutoRunner.Create(nil) do
+ try
+   AppName:= 'HIDTemp';
+   AutoRun:= True;
+ finally
+   Free;
+ end;
 end;
 
 procedure TMainForm.ComboIntervalChange(Sender: TObject);
@@ -79,6 +94,7 @@ end;
 
 procedure TMainForm.FormCreate(Sender: TObject);
 begin
+ AddToAutoRun;
  ComboInterval.ItemIndex:= 1;
  f_DS := TTempDataSource.Create;
  Timer1.Interval:= 1000*3*60;
@@ -139,8 +155,12 @@ begin
    l_Color:= clGreen;
   Series1.Add(l_Rec.rTemp, TimeToStr(l_Rec.rDateTime, l_FS), l_Color);
  end;
- ChartTemp.LeftAxis.Maximum:= f_DS.MaxTemp(l_From, l_To).rTemp+1;
- ChartTemp.LeftAxis.Minimum:= f_DS.MinTemp(l_From, l_To).rTemp-1;
+ l_rec:= f_DS.MaxTemp(l_From, l_To);
+ Label2.Caption:= Format('Максимум: %f в %s', [l_rec.rTemp, TimeToStr(l_rec.rDateTime)]);
+ ChartTemp.LeftAxis.Maximum:= l_rec.rTemp+1;
+ l_rec:= f_DS.MinTemp(l_From, l_To);
+ Label1.Caption:= Format('Минимум : %f в %s', [l_rec.rTemp, TimeToStr(l_rec.rDateTime)]);
+ ChartTemp.LeftAxis.Minimum:= l_Rec.rTemp-1;
 end;
 
 procedure TMainForm.Timer1Timer(Sender: TObject);

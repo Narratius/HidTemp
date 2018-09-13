@@ -22,14 +22,18 @@ object MainForm: TMainForm
     Width = 660
     Height = 469
     Legend.Visible = False
+    Title.Text.Strings = (
+      #1048#1079#1084#1077#1085#1077#1085#1080#1077' '#1090#1077#1084#1087#1077#1088#1072#1090#1091#1088#1099)
     BottomAxis.Title.Caption = #1042#1088#1077#1084#1103' '#1080#1079#1084#1077#1088#1077#1085#1080#1103
+    LeftAxis.Automatic = False
+    LeftAxis.AutomaticMaximum = False
+    LeftAxis.AutomaticMinimum = False
+    LeftAxis.Maximum = 425.000000000000000000
+    LeftAxis.MaximumOffset = 10
+    LeftAxis.Minimum = 25.000000000000000000
     LeftAxis.Title.Caption = #1043#1088#1072#1076#1091#1089#1099' '#1062#1077#1083#1100#1089#1080#1103
     Align = alClient
     TabOrder = 0
-    ExplicitLeft = 24
-    ExplicitTop = 120
-    ExplicitWidth = 628
-    ExplicitHeight = 382
     DefaultCanvas = 'TGDIPlusCanvas'
     PrintMargins = (
       15
@@ -60,15 +64,30 @@ object MainForm: TMainForm
     Height = 41
     Align = alTop
     TabOrder = 1
-    ExplicitLeft = 232
-    ExplicitTop = 24
-    ExplicitWidth = 185
+    DesignSize = (
+      660
+      41)
+    object Label1: TLabel
+      Left = 8
+      Top = 4
+      Width = 48
+      Height = 23
+      Caption = #1052#1080#1085#1080#1084#1091#1084
+    end
+    object Label2: TLabel
+      Left = 8
+      Top = 19
+      Width = 54
+      Height = 13
+      Caption = #1052#1072#1082#1089#1080#1084#1091#1084
+    end
     object ComboInterval: TComboBox
       Left = 496
       Top = 8
       Width = 145
       Height = 21
       Style = csDropDownList
+      Anchors = [akTop, akRight]
       TabOrder = 0
       OnChange = ComboIntervalChange
       Items.Strings = (
@@ -108,5 +127,9 @@ object MainForm: TMainForm
     object actConfig: TAction
       Caption = #1053#1072#1089#1090#1088#1086#1081#1082#1080
     end
+  end
+  object XPManifest1: TXPManifest
+    Left = 480
+    Top = 305
   end
 end

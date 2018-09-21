@@ -71,7 +71,7 @@ object MainForm: TMainForm
       Left = 8
       Top = 4
       Width = 48
-      Height = 23
+      Height = 13
       Caption = #1052#1080#1085#1080#1084#1091#1084
     end
     object Label2: TLabel
@@ -131,5 +131,15 @@ object MainForm: TMainForm
   object XPManifest1: TXPManifest
     Left = 480
     Top = 305
+  end
+  object OneInstance1: TOneInstance
+    InformUser = True
+    RaisePriorInstance = True
+    Left = 224
+  end
+  object IdHTTPServer1: TIdHTTPServer
+    Bindings = <>
+    Left = 296
+    Top = 8
   end
 end

@@ -6,7 +6,9 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ExtCtrls, VclTee.TeeGDIPlus, VCLTee.TeEngine,
   VCLTee.TeeProcs, VCLTee.Chart, VCLTee.Series, System.Actions, Vcl.ActnList,
-  Vcl.Menus, TempDS, VCLTee.TeeSpline, Vcl.XPMan, autorunner;
+  Vcl.Menus, TempDS, VCLTee.TeeSpline, Vcl.XPMan, autorunner, OneInstance,
+  IdBaseComponent, IdComponent, IdCustomTCPServer, IdCustomHTTPServer,
+  IdHTTPServer;
 
 type
   TMainForm = class(TForm)
@@ -25,6 +27,8 @@ type
     Label1: TLabel;
     Label2: TLabel;
     XPManifest1: TXPManifest;
+    OneInstance1: TOneInstance;
+    IdHTTPServer1: TIdHTTPServer;
     procedure FormCreate(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
     procedure N2Click(Sender: TObject);
@@ -48,7 +52,7 @@ var
 
 implementation
 uses
- DateUtils,
+ DateUtils, Math,
  HIDFTDLL;
 
 {$R *.dfm}
@@ -66,9 +70,12 @@ var
 begin
  l_Date:= Now;
  l_Temp:= GetTemperature;
- f_DS.Put(l_Date, l_Temp);
- Panel1.Caption:= Format('%f C', [l_Temp]);
- RedrawChart;
+ if l_Temp <> MinDouble then
+ begin
+  f_DS.Put(l_Date, l_Temp);
+  Panel1.Caption:= Format('%f C', [l_Temp]);
+  RedrawChart;
+ end;
 end;
 
 procedure TMainForm.AddToAutoRun;
@@ -105,6 +112,7 @@ function TMainForm.GetTemperature: Double;
 var
  I, l_Count: Integer;
 begin
+ Result:= MinDouble;
  l_Count := EMyDetectDevice(0);
  for I := 0 to l_Count-1 do
  begin
@@ -125,6 +133,7 @@ end;
 procedure TMainForm.RedrawChart;
 var
  l_From, l_To: TDateTime;
+ l_MinTemp, l_MaxTemp: Double;
  i: Integer;
  l_rec: TTempRec;
  l_Color: TColor;
@@ -155,12 +164,17 @@ begin
    l_Color:= clGreen;
   Series1.Add(l_Rec.rTemp, TimeToStr(l_Rec.rDateTime, l_FS), l_Color);
  end;
- l_rec:= f_DS.MaxTemp(l_From, l_To);
- Label2.Caption:= Format('Максимум: %f в %s', [l_rec.rTemp, TimeToStr(l_rec.rDateTime)]);
- ChartTemp.LeftAxis.Maximum:= l_rec.rTemp+1;
- l_rec:= f_DS.MinTemp(l_From, l_To);
- Label1.Caption:= Format('Минимум : %f в %s', [l_rec.rTemp, TimeToStr(l_rec.rDateTime)]);
- ChartTemp.LeftAxis.Minimum:= l_Rec.rTemp-1;
+   l_rec:= f_DS.MaxTemp(l_From, l_To);
+   Label2.Caption:= Format('Максимум: %f в %s', [l_rec.rTemp, TimeToStr(l_rec.rDateTime)]);
+   l_MaxTemp:= l_Rec.rTemp;
+   l_rec:= f_DS.MinTemp(l_From, l_To);
+   Label1.Caption:= Format('Минимум : %f в %s', [l_rec.rTemp, TimeToStr(l_rec.rDateTime)]);
+   l_MinTemp:= l_rec.rTemp;
+   if l_MinTemp < l_MaxTemp then
+   begin
+    ChartTemp.LeftAxis.Maximum:= l_MaxTemp+1;
+    ChartTemp.LeftAxis.Minimum:= l_MinTemp-1;
+   end;
 end;
 
 procedure TMainForm.Timer1Timer(Sender: TObject);

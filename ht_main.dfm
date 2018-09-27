@@ -37,10 +37,17 @@ object MainForm: TMainForm
     DefaultCanvas = 'TGDIPlusCanvas'
     PrintMargins = (
       15
-      11
+      14
       15
-      11)
+      14)
     ColorPaletteIndex = 13
+    object Image1: TImage
+      Left = 8
+      Top = 352
+      Width = 105
+      Height = 105
+      Visible = False
+    end
     object Series1: TLineSeries
       ColorEachPoint = True
       Brush.BackColor = clDefault
@@ -67,20 +74,6 @@ object MainForm: TMainForm
     DesignSize = (
       660
       41)
-    object Label1: TLabel
-      Left = 8
-      Top = 4
-      Width = 48
-      Height = 13
-      Caption = #1052#1080#1085#1080#1084#1091#1084
-    end
-    object Label2: TLabel
-      Left = 8
-      Top = 19
-      Width = 54
-      Height = 13
-      Caption = #1052#1072#1082#1089#1080#1084#1091#1084
-    end
     object ComboInterval: TComboBox
       Left = 496
       Top = 8
@@ -126,6 +119,7 @@ object MainForm: TMainForm
     end
     object actConfig: TAction
       Caption = #1053#1072#1089#1090#1088#1086#1081#1082#1080
+      OnExecute = actConfigExecute
     end
   end
   object XPManifest1: TXPManifest
@@ -139,7 +133,13 @@ object MainForm: TMainForm
   end
   object IdHTTPServer1: TIdHTTPServer
     Bindings = <>
+    DefaultPort = 8011
+    OnCommandGet = IdHTTPServer1CommandGet
     Left = 296
     Top = 8
+  end
+  object PageProducer1: TPageProducer
+    Left = 328
+    Top = 272
   end
 end

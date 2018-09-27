@@ -65,7 +65,7 @@ end;
 
 procedure TTempDataSource.DeleteInvalid;
 begin
- f_DB.ExecSQL('DELETE FROM '+ c_TableName+ ' WHERE (temperature < -40) and (temperature > 120)');
+ f_DB.ExecSQL('DELETE FROM '+ c_TableName+ ' WHERE (temperature < -40) or (temperature > 120)');
 
 end;
 
@@ -128,8 +128,16 @@ begin
      ' ORDER BY moment;',
     [DateTimeToUnix(aFrom), DateTimeToUnix(aTo)]));
  try
-  Result.rDateTime := UnixToDateTime(l_Res.FieldAsInteger(fldMoment));
-  Result.rTemp     := l_Res.FieldAsDouble(fldTemp);
+  if l_Res.Count > 0 then
+  begin
+    Result.rDateTime := UnixToDateTime(l_Res.FieldAsInteger(fldMoment));
+    Result.rTemp     := l_Res.FieldAsDouble(fldTemp);
+  end
+  else
+  begin
+    Result.rDateTime := MinDateTime;
+    Result.rTemp     := MaxInt;
+  end;
  finally
   FreeAndNil(l_Res);
  end;
@@ -161,8 +169,11 @@ begin
      ' ORDER BY moment;',
     [DateTimeToUnix(aFrom), DateTimeToUnix(aTo)]));
  try
-  Result.rDateTime := UnixToDateTime(l_Res.FieldAsInteger(fldMoment));
-  Result.rTemp     := l_Res.FieldAsDouble(fldTemp);
+  if l_Res.Count > 0 then
+  begin
+   Result.rDateTime := UnixToDateTime(l_Res.FieldAsInteger(fldMoment));
+   Result.rTemp     := l_Res.FieldAsDouble(fldTemp);
+  end;
  finally
   FreeAndNil(l_Res);
  end;

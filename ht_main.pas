@@ -283,8 +283,8 @@ begin
  ChartTemp.SubTitle.Text.Add(Format('Минимум : %f в %s', [IfThen(l_MinTemp = MaxInt, 0, l_MinTemp), TimeToStr(l_rec.rDateTime)]));
  if l_MinTemp < l_MaxTemp then
  begin
-  ChartTemp.LeftAxis.Maximum:= l_MaxTemp+1;
-  ChartTemp.LeftAxis.Minimum:= l_MinTemp-1;
+  ChartTemp.LeftAxis.Minimum:= l_MinTemp-0.5;
+  ChartTemp.LeftAxis.Maximum:= l_MaxTemp+0.5;
  end;
 end;
 
@@ -303,7 +303,6 @@ begin
    Values['Interval']:=180;
    Values['Width']:= 1280;
    Values['Height']:= 1024;
-
   end;
 end;
 
